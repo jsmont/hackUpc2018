@@ -1,0 +1,117 @@
+<html>
+    <head>
+        <title>RandScanner</title>
+        <style>
+.display{
+    display:inline-block;
+    width: 49%;
+}
+.snumber{
+    font-size: 200%;
+}
+#chart_div{
+    width:100%;
+    height: 500px;
+}
+        </style>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    </head>
+    <body>
+        <center>
+            Select a range:
+            <div>
+                <input id="min" value="0" type="number"/>
+                <input id="max" value="10" type="number"/>
+            </div>
+            <button onclick="start()">Start</button>
+            <button onclick="stop()">Stop</button>
+        </center>
+
+        <center>
+            <div class="display">
+                <span>Skyscanner</span><br>
+                <span class="snumber" id="sdisplay">0</span>
+            </div>
+            <div class="display">
+                <span>Python</span><br>
+                <span class="snumber" id="pdisplay">0</span>
+            </div>
+        </center>
+        <div id="chart_div">
+        </div>
+        <script>
+
+            var chart = null;
+            init = ()=>{
+                console.log("initialized")
+                chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            };
+
+            google.charts.load('current', {packages: ['corechart', 'line']});
+            google.charts.setOnLoadCallback(init);
+
+
+            var iterator = null;
+            var min = 0;
+            var max = 10;
+
+            start = ()=>{
+                console.log("started");
+                min = document.getElementById("min").value;
+                max = document.getElementById("max").value;
+
+                console.log(min, max);
+                if(iterator != null) clearInterval(iterator);
+
+                iterator = setInterval(requestData, 1000);
+            };
+
+
+            stop = ()=>{
+
+                if(iterator != null) clearInterval(iterator);
+                iterator = null;
+            }
+
+            requestData = () => {
+                $.get("random/"+min+"/"+max, (data) => {
+                    console.log(data)
+                    document.getElementById("sdisplay").textContent= data.rs;
+                    document.getElementById("pdisplay").textContent= data.rd;
+
+                    drawChart(data.aus, data.aud)
+                });
+            };
+
+            drawChart = (as, ad) => {
+                var data = new google.visualization.DataTable();
+                data.addColumn('number', 'X');
+                data.addColumn('number', 'Skyscanner');
+                data.addColumn('number', 'Python');
+
+                var d = [];
+
+                for(var i = 0; i < as.length; ++i){
+                    d.push([i, as[i], ad[i]]);
+                }
+
+                data.addRows(d);
+
+                var options = {
+                    hAxis: {
+                        title: 'Offset'
+                    },
+                    vAxis: {
+                        title: 'Autocorrelation'
+                    },
+                    series: {
+                        1: {curveType: 'function'}
+                    }
+                };
+
+                if(chart != null) chart.draw(data, options);
+            }
+        </script>
+    </body>
+</html>
