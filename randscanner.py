@@ -2,6 +2,7 @@ import requests;
 import random as rd;
 import hashlib;
 import math;
+import json;
 
 countries = ['KH', 'HN', 'HU', 'TN', 'TW', 'NZ', 'SR', 'PK', 'ST', 'MS', 'LC', 'BW', 'GH', 
 'MU', 'MM', 'IR', 'SA', 'PR', 'BT', 'LA', 'CF', 'IN', 'MN', 'VI', 'ID', 'BY', 'MA', 'VU', 
@@ -68,10 +69,12 @@ def random():
     if r.status_code == 201:
         url2 = r.headers.get("Location");
         d = requests.get(url2, params="apikey=ha776660837260884554538331946585");
+
         rand = hashlib.sha256(d.text.encode('utf-8')).hexdigest();
-        rellevant_bits = rand[0:6]
-        x = int(rellevant_bits, 16) & 0x7fffff
-        return float(x)/(1 << 23)
+        
+        rellevant_bits = rand[0:8]
+        x = int(rellevant_bits, 16) 
+        return float(x)/(1 << 32)
     else:
         print("Request failed");
         return random()
